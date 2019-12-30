@@ -2,6 +2,7 @@ var express = require('express'),
 	app = express(),
 	bodyParser = require('body-parser'),
 	methodOverride = require('method-override'),
+	expressSanitizer = require('express-sanitizer'),
 	mongoose = require('mongoose');
 
 // DB CONNECTION
@@ -20,17 +21,59 @@ mongoose.set('useCreateIndex', true);
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(expressSanitizer());
 app.use(methodOverride('_method'));
 
-// MODEL CONFIG
+// BLOG -  title, image, body, created_at
 var blogSchema = new mongoose.Schema({
 	title: String,
 	image: String,
 	body: String,
 	created_at: { type: Date, default: Date.now }
 });
-
 var Blog = mongoose.model('Blog', blogSchema);
+
+// NEW BLOG
+// var newBlog = new Blog({
+// 	title: 'EMBEDDED TITLE',
+// 	image: ' EMBEDDED IMAGE URL',
+// 	body: 'EMBEDDED BODY Lorem ipsum'
+// });
+
+// // SAVE newBlog
+// newUser.save((err, user) => {
+// err ? console.log(err) : console.log(user);
+// 	if (err) {
+// 		console.log(err);
+// 	} else {
+// 		console.log(user);
+// 	}
+// });
+
+// USER -  email, name, image, blogs, created_at
+var userSchema = new mongoose.Schema({
+	email: String,
+	name: String,
+	image: String,
+	blogs: [ blogSchema ],
+	created_at: { type: Date, default: Date.now }
+});
+var User = mongoose.model('User', userSchema);
+
+// NEW USER
+var newUser = new User({
+	email: 'movalley5@gmail.com',
+	name: 'Lukas Corbitt'
+});
+
+// // TEST newUser
+// newUser.save((err, user) => {
+// 	if (err) {
+// 		console.log(err);
+// 	} else {
+// 		console.log(user);
+// 	}
+// });
 
 // RESTFUL ROUTES
 app.get('/', (req, res) => {
@@ -55,6 +98,8 @@ app.get('/blogs/new', (req, res) => {
 
 // CREATE ROUTE
 app.post('/blogs', (req, res) => {
+	// Sanitizer
+	req.body.blog.body = req.sanitize(req.body.blog.body);
 	// Create Blog
 	Blog.create(req.body.blog, (err, newBlog) => {
 		if (err) {
@@ -89,11 +134,24 @@ app.get('/blogs/:id/edit', (req, res) => {
 
 // UPDATE ROUTE
 app.put('/blogs/:id', (req, res) => {
+	// Sanitizer
+	req.body.blog.body = req.sanitize(req.body.blog.body);
 	Blog.findByIdAndUpdate(req.params.id, req.body.blog, (err, updatedBlog) => {
 		if (err) {
 			res.redirect('/blogs');
 		} else {
 			res.redirect('/blogs/' + req.params.id);
+		}
+	});
+});
+
+// DESTROY ROUTE
+app.delete('/blogs/:id', (req, res) => {
+	Blog.findByIdAndDelete(req.params.id, (err) => {
+		if (err) {
+			res.redirect('/blogs');
+		} else {
+			res.redirect('/blogs');
 		}
 	});
 });
