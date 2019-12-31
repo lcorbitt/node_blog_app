@@ -7,7 +7,7 @@ var express = require('express'),
 
 // DB CONNECTION
 mongoose
-	.connect('mongodb://localhost/restful_blog_app', {
+	.connect('mongodb://localhost/blog_demo_2', {
 		useUnifiedTopology: true,
 		useNewUrlParser: true
 	})
@@ -24,14 +24,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressSanitizer());
 app.use(methodOverride('_method'));
 
+var Blog = require('./models/blog');
+var User = require('./models/user');
+
 // BLOG -  title, image, body, created_at
-var blogSchema = new mongoose.Schema({
-	title: String,
-	image: String,
-	body: String,
-	created_at: { type: Date, default: Date.now }
-});
-var Blog = mongoose.model('Blog', blogSchema);
+// var blogSchema = new mongoose.Schema({
+// 	title: String,
+// 	image: String,
+// 	body: String,
+// 	created_at: { type: Date, default: Date.now }
+// });
+// var Blog = mongoose.model('Blog', blogSchema);
 
 // NEW BLOG
 // var newBlog = new Blog({
@@ -51,19 +54,19 @@ var Blog = mongoose.model('Blog', blogSchema);
 // });
 
 // USER -  email, name, image, blogs, created_at
-var userSchema = new mongoose.Schema({
-	email: String,
-	name: String,
-	image: String,
-	blogs: [
-		{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Blog'
-		}
-	],
-	created_at: { type: Date, default: Date.now }
-});
-var User = mongoose.model('User', userSchema);
+// var userSchema = new mongoose.Schema({
+// 	email: String,
+// 	name: String,
+// 	image: String,
+// 	blogs: [
+// 		{
+// 			type: mongoose.Schema.Types.ObjectId,
+// 			ref: 'Blog'
+// 		}
+// 	],
+// 	created_at: { type: Date, default: Date.now }
+// });
+// var User = mongoose.model('User', userSchema);
 
 // NEW USER
 // var newUser = new User({
@@ -83,15 +86,32 @@ var User = mongoose.model('User', userSchema);
 // 	err ? console.log(err) : console.log(user);
 // });
 
-User.findOne({ name: 'Charlie Brown' }, (err, user) => {
-	err
-		? console.log(err)
-		: user.blogs.push({
-				title: 'LOG THE LENGTH',
-				image: 'HOW MANY',
-				body: 'I WONDER'
-			});
-	user.save((err, user) => {
-		err ? console.log(err) : console.log(user, user.name + ' has ' + user.blogs.length + ' blogs');
-	});
-});
+// NEW USER
+// User.create({
+// 	email: 'bob@gmail.com',
+// 	name: 'Bob Belcher'
+// });
+
+// NEW BLOG
+Blog.create(
+	{
+		title: 'How to cook the best burger',
+		image: 'MODULAR IMAGE URL',
+		body: 'MODULAR BODY'
+	},
+	(err, blog) => {
+		err
+			? console.log(err)
+			: User.findOne({ email: 'bob@gmail.com' }, (err, foundUser) => {
+					err ? console.log(err) : foundUser.blogs.push(blog);
+					foundUser.save((err, data) => {
+						err ? console.log(err) : console.log(data);
+					});
+				});
+	}
+);
+
+// Find user and find user's posts
+// User.findOne({ email: 'bob@gmail.com' }).populate('blogs').exec((err, user) => {
+// 	err ? console.log(err) : console.log(user);
+// });

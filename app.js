@@ -24,14 +24,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressSanitizer());
 app.use(methodOverride('_method'));
 
-// BLOG -  title, image, body, created_at
-var blogSchema = new mongoose.Schema({
-	title: String,
-	image: String,
-	body: String,
-	created_at: { type: Date, default: Date.now }
-});
-var Blog = mongoose.model('Blog', blogSchema);
+var Blog = require('./models/blog');
+var User = require('./models/user');
 
 // NEW BLOG
 // var newBlog = new Blog({
@@ -50,21 +44,18 @@ var Blog = mongoose.model('Blog', blogSchema);
 // 	}
 // });
 
-// USER -  email, name, image, blogs, created_at
-var userSchema = new mongoose.Schema({
-	email: String,
-	name: String,
-	image: String,
-	blogs: [ blogSchema ],
-	created_at: { type: Date, default: Date.now }
-});
-var User = mongoose.model('User', userSchema);
-
 // NEW USER
-var newUser = new User({
-	email: 'movalley5@gmail.com',
-	name: 'Lukas Corbitt'
-});
+// var newUser = new User({
+// 	email: 'charlie@brown.edu',
+// 	name: 'Charlie Brown'
+// });
+
+// PUSH BLOG TO USER
+// newUser.blogs.push({
+// 	title: 'Pushed Blog TITLE',
+// 	image: 'Pushed Blog Image URL',
+// 	body: 'Pushed Blog BODY'
+// });
 
 // // TEST newUser
 // newUser.save((err, user) => {
@@ -76,6 +67,8 @@ var newUser = new User({
 // });
 
 // RESTFUL ROUTES
+
+// INDEX ROUTE
 app.get('/', (req, res) => {
 	res.redirect('/blogs');
 });
